@@ -37,7 +37,7 @@ CChildView::CChildView()
 
 	// A white box
 	CGrPtr<CGrMaterial> whitepaint = new CGrMaterial;
-	whitepaint->AmbientAndDiffuse(0.8f, 0.8f, 0.8f);
+	whitepaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
 	scene->Child(whitepaint);
 
 	CGrPtr<CGrComposite> whitebox = new CGrComposite;

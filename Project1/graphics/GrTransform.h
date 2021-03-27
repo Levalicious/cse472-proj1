@@ -2,6 +2,7 @@
 // Name :         GrTransform.h
 // Description :  Header file for CGrTransform.  This class implements
 //                a 4x4 transformation matrix.  
+// Notice :       Angles are in degrees.
 //
 
 #if !defined(AFX_GRTRANSFORM_H__BB2CDF1C_D660_4826_AD0E_16C7D5C04A29__INCLUDED_)
@@ -40,6 +41,9 @@ public:
 	CGrTransform &SetScale(double x, double y, double z) {SetIdentity();  m[0][0]=x;  m[1][1]=y;  m[2][2]=z;  return *this;}
 	CGrTransform &Transpose();
     CGrTransform &SetAffineInverse(const CGrTransform &fm);
+    CGrTransform &SetEulerXYZ(double x, double y, double z);
+
+    void GetEulerXYZ(double &x, double &y, double &z) const;
 
     double &M(int r, int c) {return m[r][c];}
     const double &M(int r, int c) const {return m[r][c];}

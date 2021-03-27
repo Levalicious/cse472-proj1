@@ -169,6 +169,62 @@ CGrTransform & CGrTransform::SetRotate(const CGrPoint &x, const CGrPoint &y, con
    return *this;
 }
 
+
+//
+// Name :        CGrTransform::SetEulerXYZ()
+// Description : Create a rotation matrix from Euler angles in the rotation
+//               order XYZ
+//
+
+CGrTransform &CGrTransform::SetEulerXYZ(double x, double y, double z)
+{
+    CGrTransform rx, ry, rz;
+    rx.SetRotateX(x);
+    ry.SetRotateY(y);
+    rz.SetRotateZ(z);
+    
+    *this = rz * ry * rx;
+    return *this;
+}
+
+
+//
+// Name :         CGrTransform::GetEulerXYZ()
+// Description :  Extract Euler angles for the current rotation matrix.
+//                Based on the order XYZ.
+//
+
+void CGrTransform::GetEulerXYZ(double &x, double &y, double &z) const
+{
+        // What's the angle the X vector rotates to?
+        double xx = m[0][0];
+        double xy = m[1][0];
+        double xz = m[2][0];
+
+        // Determine the Z angle first
+        if(fabs(xx) < 0.000001 && fabs(xy) < 0.00001)
+        {
+            // Gimble lock condition.  
+            y = -90;
+            z = 0;
+        }
+        else
+        {
+            z = atan2(xy, xx) * GR_RTOD;
+            y = asin(-xz) * GR_RTOD;
+        }
+
+        // Now that we have these, we create a rotation matrix
+        // that cancels them and figure out what the rotation is.
+        CGrTransform rzinv, ryinv;
+        rzinv.SetRotateZ(-z);
+        ryinv.SetRotateY(-y);
+
+        CGrTransform rxfor = ryinv * rzinv * *this;
+        x = atan2(rxfor[2][1], rxfor[1][1]) * GR_RTOD;
+}
+
+
 inline void _swap(double &a, double &b)
 {
    double t = a;

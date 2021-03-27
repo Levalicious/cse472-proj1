@@ -110,10 +110,14 @@ bool CMyRaytraceRenderer::RendererEnd()
 	double xmin = ymin * ProjectionAspect();
 	double xwid = -xmin * 2;
 
+	// Extinction coefficient for fog
+	double extCoeff = 0.01;
+
 	for (int r = 0; r < m_rayimageheight; r++)
 	{
 		for (int c = 0; c < m_rayimagewidth; c++)
 		{
+			double colorFog[3] = { 0.862, 0.859, 0.874 };
 			double colorTotal[3] = { 0, 0, 0 };
 
 			double x = xmin + (c + 0.5) / m_rayimagewidth * xwid;
@@ -140,18 +144,22 @@ bool CMyRaytraceRenderer::RendererEnd()
 
 				if (material != NULL)
 				{
-					m_rayimage[r][c * 3] = BYTE(material->Diffuse(0) * 255);
-					m_rayimage[r][c * 3 + 1] = BYTE(material->Diffuse(1) * 255);
-					m_rayimage[r][c * 3 + 2] = BYTE(material->Diffuse(2) * 255);
+					double fogWeight = exp(-t * extCoeff);
+					double fogWeightInv = 1.0 - fogWeight;
+					m_rayimage[r][c * 3 + 0] = BYTE((material->Diffuse(0) * fogWeight + fogWeightInv * colorFog[0]) * 255);
+					m_rayimage[r][c * 3 + 1] = BYTE((material->Diffuse(1) * fogWeight + fogWeightInv * colorFog[1]) * 255);
+					m_rayimage[r][c * 3 + 2] = BYTE((material->Diffuse(2) * fogWeight + fogWeightInv * colorFog[2]) * 255);
 				}
+
+
 
 			}
 			else
 			{
 				// We hit nothing...
-				m_rayimage[r][c * 3] = 0;
-				m_rayimage[r][c * 3 + 1] = 0;
-				m_rayimage[r][c * 3 + 2] = 0;
+				m_rayimage[r][c * 3] = colorFog[0] * 255;
+				m_rayimage[r][c * 3 + 1] = colorFog[1] * 255;
+				m_rayimage[r][c * 3 + 2] = colorFog[2] * 255;
 			}
 		}
 		if ((r % 50) == 0)
