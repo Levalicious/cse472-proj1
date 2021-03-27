@@ -26,6 +26,11 @@ CChildView::CChildView()
 	CGrPtr<CGrComposite> scene = new CGrComposite;
 	m_scene = scene;
 
+	CGrPoint top = CGrPoint(0, 4, 0);
+	CGrPoint a = CGrPoint(-3.5, 0, 0);
+	CGrPoint b = CGrPoint(3, 0, -3.5);
+	CGrPoint c = CGrPoint(3, 0, 3.5);
+
 	// A red box
 	CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
 	redpaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
@@ -33,7 +38,7 @@ CChildView::CChildView()
 
 	CGrPtr<CGrComposite> redbox = new CGrComposite;
 	redpaint->Child(redbox);
-	redbox->Box(1, 1, 1, 5, 5, 5);
+	redbox->Box(3, 3, 3, 5, 5, 5);
 
 	// A white box
 	CGrPtr<CGrMaterial> whitepaint = new CGrMaterial;
@@ -43,6 +48,18 @@ CChildView::CChildView()
 	CGrPtr<CGrComposite> whitebox = new CGrComposite;
 	whitepaint->Child(whitebox);
 	whitebox->Box(-10, -10, -10, 5, 5, 5);
+
+	// A green tetrahedron
+	CGrPtr<CGrMaterial> greenpaint = new CGrMaterial;
+	greenpaint->AmbientAndDiffuse(0.15f, 0.3f, 0.2f);
+	scene->Child(greenpaint);
+
+	CGrPtr<CGrComposite> greentetrahedron = new CGrComposite;
+	greenpaint->Child(greentetrahedron);
+	greentetrahedron->Poly3(b, a, top);
+	greentetrahedron->Poly3(a, c, top);
+	greentetrahedron->Poly3(c, b, top);
+	greentetrahedron->Poly3(b, c, a);
 }
 
 CChildView::~CChildView()
