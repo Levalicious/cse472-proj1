@@ -26,10 +26,10 @@ CChildView::CChildView()
 	CGrPtr<CGrComposite> scene = new CGrComposite;
 	m_scene = scene;
 
-	CGrPoint top = CGrPoint(0, 4, 0);
-	CGrPoint a = CGrPoint(-3.5, 0, 0);
-	CGrPoint b = CGrPoint(3, 0, -3.5);
-	CGrPoint c = CGrPoint(3, 0, 3.5);
+	CGrPoint top = CGrPoint(-3, 4, 4);
+	CGrPoint a = CGrPoint(-3, -3, -3);
+	CGrPoint c = CGrPoint(4, -3, 4);
+	CGrPoint b = CGrPoint(4, 4, -3);
 
 	// A red box
 	CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
@@ -51,7 +51,7 @@ CChildView::CChildView()
 
 	// A green tetrahedron
 	CGrPtr<CGrMaterial> greenpaint = new CGrMaterial;
-	greenpaint->AmbientAndDiffuse(0.15f, 0.3f, 0.2f);
+	greenpaint->AmbientAndDiffuse(0.12f, 0.18f, 0.11f);
 	scene->Child(greenpaint);
 
 	CGrPtr<CGrComposite> greentetrahedron = new CGrComposite;

@@ -18,6 +18,7 @@ public:
 
     std::list<CGrTransform> m_mstack;
     CGrMaterial* m_material;
+    CGrPoint m_light;
 
     void SetWindow(CWnd* p_window);
     bool RendererStart();

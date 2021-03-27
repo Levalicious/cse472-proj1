@@ -22,6 +22,8 @@ bool CMyRaytraceRenderer::RendererStart()
 
 	m_mstack.push_back(t);
 
+	m_light = CGrPoint(10,10,10);
+
 	m_material = NULL;
 
 	return true;
@@ -100,6 +102,7 @@ void CMyRaytraceRenderer::RendererEndPolygon()
     m_intersection.PolygonEnd();
 }
 
+
 bool CMyRaytraceRenderer::RendererEnd()
 {
 	m_intersection.LoadingComplete();
@@ -144,11 +147,22 @@ bool CMyRaytraceRenderer::RendererEnd()
 
 				if (material != NULL)
 				{
+					//calculate shading
+					CGrPoint V = Normalize3(ray.Direction()) * -1;
+					CGrPoint L = Normalize3(m_light - intersect);//TODO: check if intersect is value to use here?
+
+					CGrPoint H = Normalize3(V + L);
+
+					double spec = max(Dot3(N, H), 0.0);
+
+					//calculate fog
 					double fogWeight = exp(-t * extCoeff);
 					double fogWeightInv = 1.0 - fogWeight;
-					m_rayimage[r][c * 3 + 0] = BYTE((material->Diffuse(0) * fogWeight + fogWeightInv * colorFog[0]) * 255);
-					m_rayimage[r][c * 3 + 1] = BYTE((material->Diffuse(1) * fogWeight + fogWeightInv * colorFog[1]) * 255);
-					m_rayimage[r][c * 3 + 2] = BYTE((material->Diffuse(2) * fogWeight + fogWeightInv * colorFog[2]) * 255);
+
+
+					m_rayimage[r][c * 3 + 0] = BYTE((material->Diffuse(0) * fogWeight + fogWeightInv * colorFog[0]) * 255 * spec);
+					m_rayimage[r][c * 3 + 1] = BYTE((material->Diffuse(1) * fogWeight + fogWeightInv * colorFog[1]) * 255 * spec);
+					m_rayimage[r][c * 3 + 2] = BYTE((material->Diffuse(2) * fogWeight + fogWeightInv * colorFog[2]) * 255 * spec);
 				}
 
 
