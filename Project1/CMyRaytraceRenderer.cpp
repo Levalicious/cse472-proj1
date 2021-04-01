@@ -169,7 +169,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 						colorTotal[1] += currLight.m_ambient[1];
 						colorTotal[2] += currLight.m_ambient[2];
 
-						CRay shadowRay(intersect, Normalize3(CGrPoint(currLight.m_pos.X(), currLight.m_pos.Y(), currLight.m_pos.Z(), 0)));
+						CRay shadowRay(intersect, Normalize3(m_mstack.back() * currLight.m_pos));
 						const CRayIntersection::Object* shadowHit;
 						if (!m_intersection.Intersect(shadowRay, 1e20, nearest, shadowHit, t, intersect))
 						{
