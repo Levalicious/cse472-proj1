@@ -114,7 +114,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 	double xwid = -xmin * 2;
 
 	// Extinction coefficient for fog
-	double extCoeff = 0.01;
+	double extCoeff = 0.00001;
 
 	for (int r = 0; r < m_rayimageheight; r++)
 	{
@@ -122,7 +122,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 		{
 			double colorFog[3] = { 0.862, 0.859, 0.874 };
 			double colorLight[3] = { 1, 1, 1};
-			double colorTotal[3] = { 0, 0, 0 };
+			float colorTotal[3] = { 0, 0, 0 };
 
 			double x = xmin + (c + 0.5) / m_rayimagewidth * xwid;
 			double y = ymin + (r + 0.5) / m_rayimageheight * yhit;
@@ -160,10 +160,52 @@ bool CMyRaytraceRenderer::RendererEnd()
 					double fogWeight = exp(-t * extCoeff);
 					double fogWeightInv = 1.0 - fogWeight;
 
+					//shadow rays
+					for (int currLightInd = 0; currLightInd < LightCnt(); ++currLightInd) 
+					{
+						const CGrRenderer::Light currLight = GetLight(currLightInd);
 
-					m_rayimage[r][c * 3 + 0] = BYTE((material->Diffuse(0) * fogWeight * spec + fogWeightInv * colorFog[0] + ambient * colorLight[0]) * 255);
-					m_rayimage[r][c * 3 + 1] = BYTE((material->Diffuse(1) * fogWeight * spec + fogWeightInv * colorFog[1] + ambient * colorLight[0]) * 255);
-					m_rayimage[r][c * 3 + 2] = BYTE((material->Diffuse(2) * fogWeight * spec + fogWeightInv * colorFog[2] + ambient * colorLight[0]) * 255);
+						colorTotal[0] += currLight.m_ambient[0];
+						colorTotal[1] += currLight.m_ambient[1];
+						colorTotal[2] += currLight.m_ambient[2];
+
+						CRay shadowRay(intersect, Normalize3(CGrPoint(currLight.m_pos.X(), currLight.m_pos.Y(), currLight.m_pos.Z(), 0)));
+						const CRayIntersection::Object* shadowHit;
+						if (!m_intersection.Intersect(shadowRay, 1e20, nearest, shadowHit, t, intersect))
+						{
+							colorTotal[0] += currLight.m_diffuse[0] * material->Diffuse(0);
+							colorTotal[1] += currLight.m_diffuse[1] * material->Diffuse(1);
+							colorTotal[2] += currLight.m_diffuse[2] * material->Diffuse(2);
+
+							colorTotal[0] += currLight.m_specular[0] * material->Specular(0);
+							colorTotal[1] += currLight.m_specular[1] * material->Specular(1);
+							colorTotal[2] += currLight.m_specular[2] * material->Specular(2);
+						}
+					}
+
+					colorTotal[0] /= LightCnt() * 3;
+					colorTotal[1] /= LightCnt() * 3;
+					colorTotal[2] /= LightCnt() * 3;
+					
+
+					m_rayimage[r][c * 3 + 0] = BYTE((colorTotal[0] * fogWeight + fogWeightInv * colorFog[0]) * 255);
+					m_rayimage[r][c * 3 + 1] = BYTE((colorTotal[1] * fogWeight + fogWeightInv * colorFog[1]) * 255);
+					m_rayimage[r][c * 3 + 2] = BYTE((colorTotal[2] * fogWeight + fogWeightInv * colorFog[2]) * 255);
+
+					/*
+
+					if (lightHits == 0) {
+						m_rayimage[r][c * 3 + 0] = BYTE(((material->Diffuse(0) * fogWeight * spec + fogWeightInv * colorFog[0]) + ambient * colorLight[0]) * 255);
+						m_rayimage[r][c * 3 + 1] = BYTE(((material->Diffuse(1) * fogWeight * spec + fogWeightInv * colorFog[1]) + ambient * colorLight[0]) * 255);
+						m_rayimage[r][c * 3 + 2] = BYTE(((material->Diffuse(2) * fogWeight * spec + fogWeightInv * colorFog[2]) + ambient * colorLight[0]) * 255);
+					}
+					else {
+						m_rayimage[r][c * 3 + 0] = BYTE(0);
+						m_rayimage[r][c * 3 + 1] = BYTE(0);
+						m_rayimage[r][c * 3 + 2] = BYTE(0);
+					}
+					*/
+					
 				}
 
 
