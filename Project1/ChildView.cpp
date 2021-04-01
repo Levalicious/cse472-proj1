@@ -215,8 +215,12 @@ void CChildView::OnRenderRaytrace()
 {
 	m_raytrace = !m_raytrace;
 	Invalidate();
-	if (!m_raytrace)
+	if (!m_raytrace) {
+		delete m_rayimage[0];
+		delete m_rayimage;
 		return;
+	}
+		
 
 	GetSize(m_rayimagewidth, m_rayimageheight);
 
@@ -255,6 +259,7 @@ void CChildView::OnRenderRaytrace()
 	raytrace.SetImage(m_rayimage, m_rayimagewidth, m_rayimageheight);
 	raytrace.SetWindow(this);
 	raytrace.Render(m_scene);
+
 	Invalidate();
 }
 
