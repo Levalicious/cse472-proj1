@@ -148,13 +148,6 @@ bool CMyRaytraceRenderer::RendererEnd()
 
 				if (material != NULL)
 				{
-					//calculate shading
-					CGrPoint V = Normalize3(ray.Direction()) * -1;
-					CGrPoint L = Normalize3(m_light - intersect);  //TODO: check if intersect is value to use here?
-					CGrPoint H = Normalize3(V + L);
-
-					double spec = pow(max(Dot3(N, H), 0.0), 2.0);
-					double ambient = .1;
 
 					//calculate fog
 					double fogWeight = exp(-t * extCoeff);
@@ -177,9 +170,26 @@ bool CMyRaytraceRenderer::RendererEnd()
 							colorTotal[1] += currLight.m_diffuse[1] * material->Diffuse(1);
 							colorTotal[2] += currLight.m_diffuse[2] * material->Diffuse(2);
 
-							colorTotal[0] += currLight.m_specular[0] * material->Specular(0);
-							colorTotal[1] += currLight.m_specular[1] * material->Specular(1);
-							colorTotal[2] += currLight.m_specular[2] * material->Specular(2);
+							//calculate specular reflection
+							/*CGrPoint V = Normalize3(ray.Direction()) * -1;
+							CGrPoint L = Normalize3(currLight.m_pos - intersect);
+							CGrPoint H = Normalize3(V + L);
+
+							float spec = pow(max(Dot3(N, H), 0.0), material->Shininess()); // 35.f*/
+
+							//alternative method
+							CGrPoint norm = Normalize3(N);
+							CGrPoint L = Normalize3(currLight.m_pos - intersect);
+							CGrPoint V = Normalize3(ray.Origin() - intersect);
+							CGrPoint R = L * -1 - norm * 2.0 * Dot3(norm, L * -1);//H = Normalize3(V + L);
+
+							//view direction, reflection direction
+							float spec = pow(max(Dot3(V, R), 0.0), material->Shininess());
+
+							colorTotal[0] += spec * currLight.m_specular[0]; //* material->Specular(0)
+							colorTotal[1] += spec * currLight.m_specular[1]; //* material->Specular(1)
+							colorTotal[2] += spec * currLight.m_specular[2]; //* material->Specular(2)
+
 						}
 					}
 

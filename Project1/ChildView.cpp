@@ -208,6 +208,11 @@ void CChildView::ConfigureRenderer(CGrRenderer* p_renderer)
 
 	p_renderer->AddLight(CGrPoint(1, 0.5, 1.2, 0),
 		dim, brightwhite, brightwhite);
+
+	GLfloat brightblue[] = { .8f, .8f, 1.f, .8f };
+
+	p_renderer->AddLight(CGrPoint(-1, 0.5, 1.2, 0),
+		dim, brightblue, brightblue);
 }
 
 
