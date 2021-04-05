@@ -116,7 +116,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 	// Extinction coefficient for fog
 	double extCoeff = 0.01;
 
-	int aaLevel = 0;
+	int aaLevel = 2;
 
 	for (int r = 0; r < m_rayimageheight; r++)
 	{
@@ -199,9 +199,9 @@ bool CMyRaytraceRenderer::RendererEnd()
 								}
 							}
 
-							colRay[0] /= LightCnt();
-							colRay[1] /= LightCnt();
-							colRay[2] /= LightCnt();
+							colRay[0] /= LightCnt() * 3;
+							colRay[1] /= LightCnt() * 3;
+							colRay[2] /= LightCnt() * 3;
 
 							colRay[0] = (colRay[0] * fog + fogInv * colorFog[0]);
 							colRay[1] = (colRay[1] * fog + fogInv * colorFog[1]);
