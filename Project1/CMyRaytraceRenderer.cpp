@@ -114,7 +114,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 	double xwid = -xmin * 2;
 
 	// Extinction coefficient for fog
-	double extCoeff = 0.00001;
+	double extCoeff = 0.01;
 
 	int aaLevel = 0;
 
@@ -125,8 +125,6 @@ bool CMyRaytraceRenderer::RendererEnd()
 			double colorFog[3] = { 0.862, 0.859, 0.874 };
 			double colorLight[3] = { 1, 1, 1};
 			float colorTotal[3] = { 0, 0, 0 };
-
-			double tavg = 0.f;
 
 			for (int rayx = 0; rayx < 1U << aaLevel; ++rayx) 
 			{
@@ -164,7 +162,8 @@ bool CMyRaytraceRenderer::RendererEnd()
 							double ambient = .1;
 
 							//calculate fog
-							tavg += t;
+							double fog = exp(-t * extCoeff);
+							double fogInv = 1 - fog;
 
 							double colRay[3] = { 0, 0, 0 };
 
@@ -195,6 +194,10 @@ bool CMyRaytraceRenderer::RendererEnd()
 							colRay[1] /= LightCnt() * 3;
 							colRay[2] /= LightCnt() * 3;
 
+							colRay[0] = (colRay[0] * fog + fogInv * colorFog[0]);
+							colRay[1] = (colRay[1] * fog + fogInv * colorFog[1]);
+							colRay[2] = (colRay[2] * fog + fogInv * colorFog[2]);
+
 							colorTotal[0] += colRay[0];
 							colorTotal[1] += colRay[1];
 							colorTotal[2] += colRay[2];
@@ -219,7 +222,6 @@ bool CMyRaytraceRenderer::RendererEnd()
 							colorTotal[0] += colorFog[0];
 							colorTotal[1] += colorFog[1];
 							colorTotal[2] += colorFog[2];
-							tavg += 1000.f;
 						}
 
 
@@ -231,25 +233,17 @@ bool CMyRaytraceRenderer::RendererEnd()
 						colorTotal[0] += colorFog[0];
 						colorTotal[1] += colorFog[1];
 						colorTotal[2] += colorFog[2];
-						tavg += 1000.f;
 					}
 				}
 			}
 
-			colorTotal[0] /= (1U << aaLevel);
-			colorTotal[1] /= (1U << aaLevel);
-			colorTotal[2] /= (1U << aaLevel);
+			colorTotal[0] /= (1U << aaLevel) * (1U << aaLevel);
+			colorTotal[1] /= (1U << aaLevel) * (1U << aaLevel);
+			colorTotal[2] /= (1U << aaLevel) * (1U << aaLevel);
 
-			tavg /= (1U << aaLevel);
-
-			double fog = exp(-tavg * extCoeff);
-
-			double fogInv = 1 - fog;
-
-
-			m_rayimage[r][c * 3 + 0] = BYTE((colorTotal[0] * fog + fogInv * colorFog[0]) * 255);
-			m_rayimage[r][c * 3 + 1] = BYTE((colorTotal[1] * fog + fogInv * colorFog[1]) * 255);
-			m_rayimage[r][c * 3 + 2] = BYTE((colorTotal[2] * fog + fogInv * colorFog[2]) * 255);
+			m_rayimage[r][c * 3 + 0] = BYTE((colorTotal[0]) * 255);
+			m_rayimage[r][c * 3 + 1] = BYTE((colorTotal[1]) * 255);
+			m_rayimage[r][c * 3 + 2] = BYTE((colorTotal[2]) * 255);
 			
 		}
 		if ((r % 50) == 0)
