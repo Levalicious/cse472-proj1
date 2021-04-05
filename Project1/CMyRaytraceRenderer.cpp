@@ -130,6 +130,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 			{
 				for (int rayy = 0; rayy < 1U << aaLevel; ++rayy) 
 				{
+
 					double x = xmin + (c + (double(rayx + 1.f) / double((1U << aaLevel) + 1.f))) / m_rayimagewidth * xwid;
 					double y = ymin + (r + (double(rayy + 1.f) / double((1U << aaLevel) + 1.f))) / m_rayimageheight * yhit;
 
@@ -153,14 +154,6 @@ bool CMyRaytraceRenderer::RendererEnd()
 
 						if (material != NULL)
 						{
-							//calculate shading
-							CGrPoint V = Normalize3(ray.Direction()) * -1;
-							CGrPoint L = Normalize3(m_light - intersect);  //TODO: check if intersect is value to use here?
-							CGrPoint H = Normalize3(V + L);
-
-							double spec = pow(max(Dot3(N, H), 0.0), 2.0);
-							double ambient = .1;
-
 							//calculate fog
 							double fog = exp(-t * extCoeff);
 							double fogInv = 1 - fog;
@@ -184,15 +177,31 @@ bool CMyRaytraceRenderer::RendererEnd()
 									colRay[1] += currLight.m_diffuse[1] * material->Diffuse(1);
 									colRay[2] += currLight.m_diffuse[2] * material->Diffuse(2);
 
-									colRay[0] += currLight.m_specular[0] * material->Specular(0);
-									colRay[1] += currLight.m_specular[1] * material->Specular(1);
-									colRay[2] += currLight.m_specular[2] * material->Specular(2);
+									//calculate specular reflection
+									/*CGrPoint V = Normalize3(ray.Direction()) * -1;
+									CGrPoint L = Normalize3(currLight.m_pos - intersect);
+									CGrPoint H = Normalize3(V + L);
+
+									float spec = pow(max(Dot3(N, H), 0.0), material->Shininess()); // 35.f*/
+
+									//alternative method
+									CGrPoint norm = Normalize3(N);
+									CGrPoint L = Normalize3(currLight.m_pos - intersect);
+									CGrPoint V = Normalize3(ray.Origin() - intersect);
+									CGrPoint R = L * -1 - norm * 2.0 * Dot3(norm, L * -1);//H = Normalize3(V + L);
+
+									//view direction, reflection direction
+									float spec = pow(max(Dot3(V, R), 0.0), material->Shininess());
+
+									colRay[0] += spec * currLight.m_specular[0]; //* material->Specular(0)
+									colRay[1] += spec * currLight.m_specular[1]; //* material->Specular(1)
+									colRay[2] += spec * currLight.m_specular[2]; //* material->Specular(2)
 								}
 							}
 
-							colRay[0] /= LightCnt() * 3;
-							colRay[1] /= LightCnt() * 3;
-							colRay[2] /= LightCnt() * 3;
+							colRay[0] /= LightCnt();
+							colRay[1] /= LightCnt();
+							colRay[2] /= LightCnt();
 
 							colRay[0] = (colRay[0] * fog + fogInv * colorFog[0]);
 							colRay[1] = (colRay[1] * fog + fogInv * colorFog[1]);
@@ -201,20 +210,6 @@ bool CMyRaytraceRenderer::RendererEnd()
 							colorTotal[0] += colRay[0];
 							colorTotal[1] += colRay[1];
 							colorTotal[2] += colRay[2];
-
-							/*
-
-							if (lightHits == 0) {
-								m_rayimage[r][c * 3 + 0] = BYTE(((material->Diffuse(0) * fogWeight * spec + fogWeightInv * colorFog[0]) + ambient * colorLight[0]) * 255);
-								m_rayimage[r][c * 3 + 1] = BYTE(((material->Diffuse(1) * fogWeight * spec + fogWeightInv * colorFog[1]) + ambient * colorLight[0]) * 255);
-								m_rayimage[r][c * 3 + 2] = BYTE(((material->Diffuse(2) * fogWeight * spec + fogWeightInv * colorFog[2]) + ambient * colorLight[0]) * 255);
-							}
-							else {
-								m_rayimage[r][c * 3 + 0] = BYTE(0);
-								m_rayimage[r][c * 3 + 1] = BYTE(0);
-								m_rayimage[r][c * 3 + 2] = BYTE(0);
-							}
-							*/
 
 						}
 						else 
