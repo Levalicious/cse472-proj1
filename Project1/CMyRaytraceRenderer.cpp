@@ -115,9 +115,10 @@ bool CMyRaytraceRenderer::RendererEnd()
 	double xwid = -xmin * 2;
 
 	// Extinction coefficient for fog
-	double extCoeff = 0.01;
+	double extCoeff = 0.005;
 
-	int aaLevel = 1;
+	// Antialiasing : 0 = 1 ray per pixel, 1 = 4 rays per pixel, 2 = 16 rays per pixel ...
+	int aaLevel = 0;
 
 	for (int r = 0; r < m_rayimageheight; r++)
 	{
@@ -173,9 +174,9 @@ bool CMyRaytraceRenderer::RendererEnd()
 								}
 								else 
 								{
-									colRay[0] += currLight.m_ambient[0] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 0];
-									colRay[1] += currLight.m_ambient[1] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 1];
-									colRay[2] += currLight.m_ambient[2] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 2];
+									colRay[0] += currLight.m_ambient[0] * (double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 0]) / 255.0);
+									colRay[1] += currLight.m_ambient[1] * (double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 1]) / 255.0);
+									colRay[2] += currLight.m_ambient[2] * (double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 2]) / 255.0);
 								}
 								
 
@@ -190,9 +191,9 @@ bool CMyRaytraceRenderer::RendererEnd()
 									}
 									else
 									{
-										colRay[0] += currLight.m_diffuse[0] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 0];
-										colRay[1] += currLight.m_diffuse[1] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 1];
-										colRay[2] += currLight.m_diffuse[2] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 2];
+										colRay[0] += currLight.m_diffuse[0] * (double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 0]) / 255.0);
+										colRay[1] += currLight.m_diffuse[1] * (double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 1]) / 255.0);
+										colRay[2] += currLight.m_diffuse[2] * (double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 2]) / 255.0);
 									}
 
 									
@@ -238,9 +239,9 @@ bool CMyRaytraceRenderer::RendererEnd()
 					else
 					{
 						// We hit nothing...
-						colorTotal[0] += colorFog[0] * 0.8;
-						colorTotal[1] += colorFog[1] * 0.8;
-						colorTotal[2] += colorFog[2] * 0.8;
+						colorTotal[0] += colorFog[0];
+						colorTotal[1] += colorFog[1];
+						colorTotal[2] += colorFog[2];
 					}
 				}
 			}

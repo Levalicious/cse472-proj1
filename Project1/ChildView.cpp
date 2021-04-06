@@ -34,17 +34,15 @@ CChildView::CChildView()
 
 	// A red box
 	CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
-	redpaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
+	redpaint->AmbientAndDiffuse(1.f, 1.f, 1.f);
 	scene->Child(redpaint);
 
 	CGrPtr<CGrTexture> plankmat = new CGrTexture;
 	plankmat->LoadFile(L"textures/plank01.bmp");
-	scene->Child(plankmat);
 
 	CGrPtr<CGrComposite> redbox = new CGrComposite;
 	redpaint->Child(redbox);
-	redbox->AddMappedRect(plankmat, 0, 0, 1, 1, 256, 256, 0, 0);
-	redbox->Box(3, 3, 3, 5, 5, 5);
+	redbox->Box(3, 3, 3, 5, 5, 5, plankmat);
 
 	// A white box
 	CGrPtr<CGrMaterial> whitepaint = new CGrMaterial;
@@ -66,6 +64,15 @@ CChildView::CChildView()
 	greentetrahedron->Poly3(a, c, top);
 	greentetrahedron->Poly3(c, b, top);
 	greentetrahedron->Poly3(b, c, a);
+
+	// A blue box
+	CGrPtr<CGrMaterial> bluepaint = new CGrMaterial;
+	bluepaint->AmbientAndDiffuse(0.f, 0.749f, 1.f);
+	scene->Child(bluepaint);
+
+	CGrPtr<CGrComposite> bluebox = new CGrComposite;
+	bluepaint->Child(bluebox);
+	bluebox->Box(-16, -16, -20, -15, -15, -300);
 }
 
 CChildView::~CChildView()
