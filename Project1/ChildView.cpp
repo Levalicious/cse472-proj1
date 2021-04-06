@@ -8,6 +8,7 @@
 #include "ChildView.h"
 #include "graphics/OpenGLRenderer.h"
 #include "CMyRaytraceRenderer.h"
+#include "graphics/GrTexture.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,8 +37,13 @@ CChildView::CChildView()
 	redpaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
 	scene->Child(redpaint);
 
+	CGrPtr<CGrTexture> plankmat = new CGrTexture;
+	plankmat->LoadFile(L"textures/plank01.bmp");
+	scene->Child(plankmat);
+
 	CGrPtr<CGrComposite> redbox = new CGrComposite;
 	redpaint->Child(redbox);
+	redbox->AddMappedRect(plankmat, 0, 0, 1, 1, 256, 256, 0, 0);
 	redbox->Box(3, 3, 3, 5, 5, 5);
 
 	// A white box

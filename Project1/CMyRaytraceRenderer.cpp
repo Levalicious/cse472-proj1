@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CMyRaytraceRenderer.h"
+#include "graphics/GrTexture.h"
 
 void CMyRaytraceRenderer::SetWindow(CWnd* p_window)
 {
@@ -116,7 +117,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 	// Extinction coefficient for fog
 	double extCoeff = 0.01;
 
-	int aaLevel = 2;
+	int aaLevel = 1;
 
 	for (int r = 0; r < m_rayimageheight; r++)
 	{
@@ -146,7 +147,7 @@ bool CMyRaytraceRenderer::RendererEnd()
 						// Determine information about the intersection
 						CGrPoint N;
 						CGrMaterial* material;
-						CGrTexture* texture;
+						CGrTexture* texture = nullptr;
 						CGrPoint texcoord;
 
 						m_intersection.IntersectInfo(ray, nearest, t,
@@ -165,17 +166,36 @@ bool CMyRaytraceRenderer::RendererEnd()
 							{
 								const CGrRenderer::Light currLight = GetLight(currLightInd);
 
-								colRay[0] += currLight.m_ambient[0];
-								colRay[1] += currLight.m_ambient[1];
-								colRay[2] += currLight.m_ambient[2];
+								if (texture == nullptr || texture->Empty()) {
+									colRay[0] += currLight.m_ambient[0] * material->Ambient(0);
+									colRay[1] += currLight.m_ambient[1] * material->Ambient(1);
+									colRay[2] += currLight.m_ambient[2] * material->Ambient(2);
+								}
+								else 
+								{
+									colRay[0] += currLight.m_ambient[0] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 0];
+									colRay[1] += currLight.m_ambient[1] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 1];
+									colRay[2] += currLight.m_ambient[2] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 2];
+								}
+								
 
 								CRay shadowRay(intersect, Normalize3(m_mstack.back() * currLight.m_pos));
 								const CRayIntersection::Object* shadowHit;
 								if (!m_intersection.Intersect(shadowRay, 1e20, nearest, shadowHit, t, intersect))
 								{
-									colRay[0] += currLight.m_diffuse[0] * material->Diffuse(0);
-									colRay[1] += currLight.m_diffuse[1] * material->Diffuse(1);
-									colRay[2] += currLight.m_diffuse[2] * material->Diffuse(2);
+									if (texture == nullptr || texture->Empty()) {
+										colRay[0] += currLight.m_diffuse[0] * material->Diffuse(0);
+										colRay[1] += currLight.m_diffuse[1] * material->Diffuse(1);
+										colRay[2] += currLight.m_diffuse[2] * material->Diffuse(2);
+									}
+									else
+									{
+										colRay[0] += currLight.m_diffuse[0] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 0];
+										colRay[1] += currLight.m_diffuse[1] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 1];
+										colRay[2] += currLight.m_diffuse[2] * texture->Row(texcoord.X() * texture->Width())[3 * int((texcoord.Y() * texture->Height())) + 2];
+									}
+
+									
 
 									//calculate specular reflection
 									/*CGrPoint V = Normalize3(ray.Direction()) * -1;
@@ -212,22 +232,15 @@ bool CMyRaytraceRenderer::RendererEnd()
 							colorTotal[2] += colRay[2];
 
 						}
-						else 
-						{
-							colorTotal[0] += colorFog[0];
-							colorTotal[1] += colorFog[1];
-							colorTotal[2] += colorFog[2];
-						}
-
 
 
 					}
 					else
 					{
 						// We hit nothing...
-						colorTotal[0] += colorFog[0];
-						colorTotal[1] += colorFog[1];
-						colorTotal[2] += colorFog[2];
+						colorTotal[0] += colorFog[0] * 0.8;
+						colorTotal[1] += colorFog[1] * 0.8;
+						colorTotal[2] += colorFog[2] * 0.8;
 					}
 				}
 			}
